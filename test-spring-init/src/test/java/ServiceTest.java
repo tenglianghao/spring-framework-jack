@@ -1,3 +1,4 @@
+import com.jack.config.AutowiredTestConfig;
 import com.jack.config.CycleAutowiredMainConfig;
 import com.jack.config.MainConfig;
 import com.jack.service.OrderService;
@@ -30,5 +31,11 @@ public class ServiceTest {
 		service.getDaoHashCode();
 		service = context.getBean(SingletonService.class);
 		service.getDaoHashCode();
+	}
+
+	@Test
+	public void testAutowired() {
+		AnnotationConfigApplicationContext context =
+				new AnnotationConfigApplicationContext(AutowiredTestConfig.class);
 	}
 }

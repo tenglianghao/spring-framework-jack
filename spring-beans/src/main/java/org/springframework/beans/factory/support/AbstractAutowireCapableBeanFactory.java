@@ -1035,8 +1035,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @see MergedBeanDefinitionPostProcessor#postProcessMergedBeanDefinition
 	 */
 	protected void applyMergedBeanDefinitionPostProcessors(RootBeanDefinition mbd, Class<?> beanType, String beanName) {
-		// CommonAnnotationBeanPostProcessor，AutowiredAnnotationBeanPostProcessor，
-		// RequiredAnnotationBeanPostProcessor，ApplicationListenerDetector
+		// CommonAnnotationBeanPostProcessor，
+		// AutowiredAnnotationBeanPostProcessor，
+		// RequiredAnnotationBeanPostProcessor，
+		// ApplicationListenerDetector
 		for (BeanPostProcessor bp : getBeanPostProcessors()) {
 			if (bp instanceof MergedBeanDefinitionPostProcessor) {
 				MergedBeanDefinitionPostProcessor bdp = (MergedBeanDefinitionPostProcessor) bp;

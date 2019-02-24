@@ -377,6 +377,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		// 获取Bean所有的@Autowired注解，只需要 bean.getClass() 类信息即可
 		// 注意这里创建InjectionMetadata里面的属性 injectElements实际上是
 		// AutowiredAnnotationBeanPostProcessor.AutowiredFieldElement
+		// 获取的信息包含了被@Autowired注解注释的属性和方法，但不包括static的
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, bean.getClass(), pvs);
 		try {
 			//注入属性，循环依赖也在这里解决
@@ -418,6 +419,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
 		// Quick check on the concurrent map first, with minimal locking.
 		InjectionMetadata metadata = this.injectionMetadataCache.get(cacheKey);
+		// 下面代码使用双检加锁机制，最大限度地提高并发
 		if (InjectionMetadata.needsRefresh(metadata, clazz)) {
 			synchronized (this.injectionMetadataCache) {
 				metadata = this.injectionMetadataCache.get(cacheKey);
@@ -436,15 +438,15 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	private InjectionMetadata buildAutowiringMetadata(final Class<?> clazz) {
 		List<InjectionMetadata.InjectedElement> elements = new ArrayList<>();
 		Class<?> targetClass = clazz;
-
 		do {
 			final List<InjectionMetadata.InjectedElement> currElements = new ArrayList<>();
-
+			// 相当于targetClass.getDeclaredFields()，然后循环遍历，对field操作
 			ReflectionUtils.doWithLocalFields(targetClass, field -> {
 				AnnotationAttributes ann = findAutowiredAnnotation(field);
 				if (ann != null) {
 					if (Modifier.isStatic(field.getModifiers())) {
 						if (logger.isWarnEnabled()) {
+							// @Autowired注解对static属性不管用
 							logger.warn("Autowired annotation is not supported on static fields: " + field);
 						}
 						return;
@@ -454,6 +456,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				}
 			});
 
+			// 相当于targetClass.getDeclaredMethods()，然后循环遍历这些method
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
 				Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);
 				if (!BridgeMethodResolver.isVisibilityBridgeMethodPair(method, bridgedMethod)) {
@@ -478,8 +481,10 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					currElements.add(new AutowiredMethodElement(method, required, pd));
 				}
 			});
-
+			// 最后才将获取的元素加入到elements列表中，为什么这样设计？为什么不每次都加一次呢？
 			elements.addAll(0, currElements);
+			// targetClass.getMethods() 和 targetClass.getFields();可以获取父类及接口中的元素，但是它却只能获取到公有属性的，因此这个不能用于此处
+			// 由于getDeclaredMethods() 和 getDeclaredFields()不能获取继承的方法和属性，也不能获取实现接口的方法，所以需要循环遍历父类
 			targetClass = targetClass.getSuperclass();
 		}
 		while (targetClass != null && targetClass != Object.class);
@@ -562,6 +567,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 	/**
 	 * Class representing injection information about an annotated field.
+	 *
 	 */
 	private class AutowiredFieldElement extends InjectionMetadata.InjectedElement {
 
@@ -585,11 +591,13 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				value = resolvedCachedArgument(beanName, this.cachedFieldValue);
 			}
 			else {
+				// 对属性及方法的封装，field -> DependencyDescritpor
+				// 封装的目的是为了作为参数传入后面的方法，即可以是对属性的封装，又可以是对方法的封装。
 				DependencyDescriptor desc = new DependencyDescriptor(field, this.required);
 				desc.setContainingClass(bean.getClass());
 				Set<String> autowiredBeanNames = new LinkedHashSet<>(1);
 				Assert.state(beanFactory != null, "No BeanFactory available");
-				TypeConverter typeConverter = beanFactory.getTypeConverter();
+				TypeConverter typeConverter = beanFactory.getTypeConverter();// ？？？这是干什么的呢
 				try {
 					// 从容器中找出依赖的对象，如果没有则先创建
 					value = beanFactory.resolveDependency(desc, beanName, autowiredBeanNames, typeConverter);
