@@ -263,7 +263,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * {@link Configuration} classes.
 	 */
 	/**
-	 * 解析目前容器中有的7（6+1）个BeanDefinition，实际上只解析配置类
+	 * 解析目前容器中有的7（6+1）个BeanDefinition，实际上只解析配置类，因为其它的都是容器内置的
 	 * @param registry
 	 */
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
@@ -290,7 +290,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
 			}
 		}
-
+		// configCandidates：配置类的候选者，如果一个都没有，则无法通过配置类来加入BeanDefinition，止步于此
 		// Return immediately if no @Configuration classes were found
 		if (configCandidates.isEmpty()) {
 			return;
@@ -333,6 +333,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		do {
 			// 执行解析方法（spring的核心代码）
 			parser.parse(candidates);
+			// 进行验证，结果放在 problemReporter 中
 			parser.validate();
 
 			Set<ConfigurationClass> configClasses = new LinkedHashSet<>(parser.getConfigurationClasses());

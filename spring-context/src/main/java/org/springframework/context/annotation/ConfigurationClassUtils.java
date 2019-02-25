@@ -71,6 +71,7 @@ abstract class ConfigurationClassUtils {
 
 
 	/**
+	 * 检查所给定的BD是否是一个配置类的候选者
 	 * Check whether the given bean definition is a candidate for a configuration class
 	 * (or a nested component class declared within a configuration/component class,
 	 * to be auto-registered as well), and mark it accordingly.
@@ -83,10 +84,8 @@ abstract class ConfigurationClassUtils {
 		if (className == null || beanDef.getFactoryMethodName() != null) {
 			return false;
 		}
-
 		AnnotationMetadata metadata;
 		// 如果这个BeanDefinition是一个 AnnotatedBeanDefinition，则走这里
-		//
 		if (beanDef instanceof AnnotatedBeanDefinition &&
 				className.equals(((AnnotatedBeanDefinition) beanDef).getMetadata().getClassName())) {
 			// Can reuse the pre-parsed metadata from the given BeanDefinition...
@@ -129,13 +128,11 @@ abstract class ConfigurationClassUtils {
 		else {
 			return false;
 		}
-
 		// It's a full or lite configuration candidate... Let's determine the order value, if any.
 		Integer order = getOrder(metadata);
 		if (order != null) {
 			beanDef.setAttribute(ORDER_ATTRIBUTE, order);
 		}
-
 		return true;
 	}
 

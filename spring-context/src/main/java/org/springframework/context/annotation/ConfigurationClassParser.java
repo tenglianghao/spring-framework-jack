@@ -167,6 +167,7 @@ class ConfigurationClassParser {
 		for (BeanDefinitionHolder holder : configCandidates) {
 			BeanDefinition bd = holder.getBeanDefinition();// AnnotatedBeanDefinition
 			try {
+				// 根据BeanDefinition的类型不同，提供了三种解析方式：
 				if (bd instanceof AnnotatedBeanDefinition) {// 拿到这个类上的注解和名字进行解析
 					parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
 				}
