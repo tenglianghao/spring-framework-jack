@@ -38,7 +38,8 @@ public class SpringApplicationJack {
 
 		// 初始化springweb环境
 		DispatcherServlet dispatcherServlet = new DispatcherServlet(webApplicationContext);
-		tomcat.addServlet(context, "aa", dispatcherServlet).setLoadOnStartup(0);
+		//tomcat容器启动的时候会优先调用DispatcherServlet的init()方法,init方法初始化请求映射
+		tomcat.addServlet(context, "aa", dispatcherServlet).setLoadOnStartup(1);
 		context.addServletMapping("/","aa");
 
 		tomcat.start();

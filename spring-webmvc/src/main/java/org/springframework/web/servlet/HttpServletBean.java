@@ -143,6 +143,7 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 	 * invoke subclass initialization.
 	 * @throws ServletException if bean properties are invalid (or required
 	 * properties are missing), or if subclass initialization fails.
+	 * DispatcherServlet的初始化方法
 	 */
 	@Override
 	public final void init() throws ServletException {
@@ -169,6 +170,7 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 		}
 
 		// Let subclasses do whatever initialization they like.
+		// 由子类 FrameworkServlet重写
 		initServletBean();
 
 		if (logger.isDebugEnabled()) {

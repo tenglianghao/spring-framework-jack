@@ -493,12 +493,14 @@ public class DispatcherServlet extends FrameworkServlet {
 	/**
 	 * Initialize the strategy objects that this servlet uses.
 	 * <p>May be overridden in subclasses in order to initialize further strategy objects.
+	 *
+	 * context即之前创建的AnnotationConfigWebApplicationContext
 	 */
 	protected void initStrategies(ApplicationContext context) {
 		initMultipartResolver(context);
 		initLocaleResolver(context);
 		initThemeResolver(context);
-		initHandlerMappings(context);
+		initHandlerMappings(context);//初始化HandlerMappings
 		initHandlerAdapters(context);
 		initHandlerExceptionResolvers(context);
 		initRequestToViewNameTranslator(context);
@@ -836,7 +838,10 @@ public class DispatcherServlet extends FrameworkServlet {
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T> List<T> getDefaultStrategies(ApplicationContext context, Class<T> strategyInterface) {
-		String key = strategyInterface.getName();
+		String key = strategyInterface.getName();//org.springframework.web.servlet.HandlerMapping
+		// value是从配置文件中拿的 org/springframework/web/servlet/DispatcherServlet.properties
+		// org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping,
+		// org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 		String value = defaultStrategies.getProperty(key);
 		if (value != null) {
 			String[] classNames = StringUtils.commaDelimitedListToStringArray(value);
@@ -961,6 +966,7 @@ public class DispatcherServlet extends FrameworkServlet {
 				multipartRequestParsed = (processedRequest != request);
 
 				// Determine handler for the current request.
+				// 确定处理这个请求的Controller的类型
 				mappedHandler = getHandler(processedRequest);
 				if (mappedHandler == null) {
 					noHandlerFound(processedRequest, response);
@@ -1172,6 +1178,10 @@ public class DispatcherServlet extends FrameworkServlet {
 	}
 
 	/**
+	 * Controller有三种类型：
+	 * 1、使用@Controller注解
+	 * 2、实现HttpRequestHandle接口
+	 * 3、实现 Controller接口，实现HandleRequest方法
 	 * Return the HandlerExecutionChain for this request.
 	 * <p>Tries all handler mappings in order.
 	 * @param request current HTTP request

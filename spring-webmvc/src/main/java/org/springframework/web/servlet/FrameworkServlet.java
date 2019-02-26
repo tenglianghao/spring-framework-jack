@@ -497,9 +497,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			logger.info("FrameworkServlet '" + getServletName() + "': initialization started");
 		}
 		long startTime = System.currentTimeMillis();
-
 		try {
 			this.webApplicationContext = initWebApplicationContext();
+			// 空方法，没有子类重写
 			initFrameworkServlet();
 		}
 		catch (ServletException | RuntimeException ex) {
@@ -527,7 +527,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		WebApplicationContext rootContext =
 				WebApplicationContextUtils.getWebApplicationContext(getServletContext());
 		WebApplicationContext wac = null;
-
+		// this.webApplicationContext是我们之前new的一个AnnotationConfigWebApplicationContext
 		if (this.webApplicationContext != null) {
 			// A context instance was injected at construction time -> use it
 			wac = this.webApplicationContext;
@@ -562,6 +562,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			// support or the context injected at construction time had already been
 			// refreshed -> trigger initial onRefresh manually here.
 			synchronized (this.onRefreshMonitor) {
+				// 核心方法，由子类DispatcherServlet重写
 				onRefresh(wac);
 			}
 		}
