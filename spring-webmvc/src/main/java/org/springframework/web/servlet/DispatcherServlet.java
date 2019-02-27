@@ -323,6 +323,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	private List<HandlerMapping> handlerMappings;
 
 	/** List of HandlerAdapters used by this servlet */
+	// 启动项目时在 org.springframework.web.servlet.DispatcherServlet.initStrategies 中初始化的
 	@Nullable
 	private List<HandlerAdapter> handlerAdapters;
 
@@ -493,12 +494,14 @@ public class DispatcherServlet extends FrameworkServlet {
 	/**
 	 * Initialize the strategy objects that this servlet uses.
 	 * <p>May be overridden in subclasses in order to initialize further strategy objects.
+	 *
+	 * context即之前创建的AnnotationConfigWebApplicationContext
 	 */
 	protected void initStrategies(ApplicationContext context) {
 		initMultipartResolver(context);
 		initLocaleResolver(context);
 		initThemeResolver(context);
-		initHandlerMappings(context);
+		initHandlerMappings(context);//初始化HandlerMappings
 		initHandlerAdapters(context);
 		initHandlerExceptionResolvers(context);
 		initRequestToViewNameTranslator(context);
@@ -836,7 +839,10 @@ public class DispatcherServlet extends FrameworkServlet {
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T> List<T> getDefaultStrategies(ApplicationContext context, Class<T> strategyInterface) {
-		String key = strategyInterface.getName();
+		String key = strategyInterface.getName();//org.springframework.web.servlet.HandlerMapping
+		// value是从配置文件中拿的 org/springframework/web/servlet/DispatcherServlet.properties
+		// org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping,
+		// org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 		String value = defaultStrategies.getProperty(key);
 		if (value != null) {
 			String[] classNames = StringUtils.commaDelimitedListToStringArray(value);
@@ -961,13 +967,16 @@ public class DispatcherServlet extends FrameworkServlet {
 				multipartRequestParsed = (processedRequest != request);
 
 				// Determine handler for the current request.
+				// 确定处理这个请求的Controller的类型
 				mappedHandler = getHandler(processedRequest);
 				if (mappedHandler == null) {
+					// 404
 					noHandlerFound(processedRequest, response);
 					return;
 				}
 
 				// Determine handler adapter for the current request.
+				// return HandlerExecutionChain.handler
 				HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
 
 				// Process last-modified header, if supported by the handler.
@@ -1172,6 +1181,17 @@ public class DispatcherServlet extends FrameworkServlet {
 	}
 
 	/**
+	 * Controller有三种类型：
+	 * 1、使用@Controller注解
+	 * 2、实现HttpRequestHandle接口
+	 * 3、实现 Controller接口，实现HandleRequest方法
+	 *
+	 * handlerMappings集合中有两类HandlerMapping：
+	 * 1、BeanNameUrlHandlerMapping 存放上面2、3两类Controller
+	 * 2、RequestMappingHandlerMapping 存放上面1 Controller
+	 * 我们也可以自己实现一个HandlerMapping去处理不同类型的请求
+	 * 例如springboot就实现了一个，用于处理静态资源如 aaa.html
+	 *
 	 * Return the HandlerExecutionChain for this request.
 	 * <p>Tries all handler mappings in order.
 	 * @param request current HTTP request

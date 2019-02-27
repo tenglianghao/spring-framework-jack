@@ -40,6 +40,9 @@ public class HandlerExecutionChain {
 
 	private static final Log logger = LogFactory.getLog(HandlerExecutionChain.class);
 
+	/**
+	 * 由于无法确定handler的类型，可能是一个class也可能是一个method，因此使用Object来接收
+	 */
 	private final Object handler;
 
 	@Nullable

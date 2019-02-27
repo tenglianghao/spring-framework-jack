@@ -35,14 +35,15 @@ public class SpringApplicationJack {
 		Context webapp = tomcat.addWebapp("/", base.getAbsolutePath());
 		 */
 		// addContext只是一个普通的项目，并不会回调web相关的方法
-		Context context = tomcat.addContext("/index", base.getAbsolutePath());
+		Context context = tomcat.addContext("/test", base.getAbsolutePath());
 
 		// 初始化springweb环境
 		DispatcherServlet dispatcherServlet = new DispatcherServlet(webApplicationContext);
+
 		// addServlet的时候会触发生命周期的init()方法。
 		// 既然是servlet容器自然是有添加servlet的方法
 		tomcat.addServlet(context, "dispatcherServlet", dispatcherServlet).setLoadOnStartup(1);
-		context.addServletMapping("/","dispatcherServlet");
+		context.addServletMapping("/*","dispatcherServlet");
 
 		tomcat.start();
 		tomcat.getServer().await();
