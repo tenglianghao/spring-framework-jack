@@ -38,8 +38,9 @@ public class SpringApplicationJack {
 
 		// 初始化springweb环境
 		DispatcherServlet dispatcherServlet = new DispatcherServlet(webApplicationContext);
-		tomcat.addServlet(context, "aa", dispatcherServlet).setLoadOnStartup(0);
-		context.addServletMapping("/","aa");
+		// addServlet的时候会触发生命周期的init()方法。
+		tomcat.addServlet(context, "dispatcherServlet", dispatcherServlet).setLoadOnStartup(1);
+		context.addServletMapping("/","dispatcherServlet");
 
 		tomcat.start();
 		tomcat.getServer().await();

@@ -6,7 +6,16 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AutowiredService {
+	private final IDao dao;
+
+	//@Autowired
+	public AutowiredService(IDao dao) {
+		this.dao = dao;
+	}
 
 	@Autowired
-	private IDao dao;
+	public AutowiredService(IDao dao, String string) {
+		System.out.println("------" + string + "-----");
+		this.dao = dao;
+	}
 }
