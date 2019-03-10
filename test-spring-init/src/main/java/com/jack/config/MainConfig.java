@@ -6,7 +6,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-//@ComponentScan({"com.jack.service"})
+@ComponentScan({"com.jack.service"})
 public class MainConfig {
 
 	@Bean(initMethod = "init",destroyMethod = "destroy2")

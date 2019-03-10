@@ -72,7 +72,7 @@ class ComponentScanAnnotationParser {
 		this.registry = registry;
 	}
 
-
+	// ComponentScanAnnotationParser.parse方法是扫描注解的主要方法
 	public Set<BeanDefinitionHolder> parse(AnnotationAttributes componentScan, final String declaringClass) {
 		// spring扫描包的时候，自己new了一个scanner
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(this.registry,

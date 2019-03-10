@@ -161,14 +161,19 @@ class ConfigurationClassParser {
 	}
 
 
+	/**
+	 * ConfigurationClassParser 解析的入口
+	 * @param configCandidates 候选的配置类，或者是有那4 + 1 个注解的BD
+	 */
 	public void parse(Set<BeanDefinitionHolder> configCandidates) {
 		this.deferredImportSelectors = new LinkedList<>();
-		// configCandidates 只有一个元素，就是主配置类对应的BeanDefinition
 		for (BeanDefinitionHolder holder : configCandidates) {
 			BeanDefinition bd = holder.getBeanDefinition();// AnnotatedBeanDefinition
 			try {
 				// 根据BeanDefinition的类型不同，提供了三种解析方式：
 				if (bd instanceof AnnotatedBeanDefinition) {// 拿到这个类上的注解和名字进行解析
+					// (AnnotatedBeanDefinition) bd).getMetadata() 只是获取类注解信息
+					// StandardAnnotationMetadata数据结构描述了一个类Class和这个类上的注解
 					parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
 				}
 				else if (bd instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) bd).hasBeanClass()) {
@@ -251,10 +256,10 @@ class ConfigurationClassParser {
 		// 递归地处理
 		SourceClass sourceClass = asSourceClass(configClass);
 		do {
-			// 在spring源码中有多处是把一个类转化成一种source，然后合同之前的那个类一起作为参数处理，这样设计的原因是什么？
+			// 在spring源码中有多处是把一个类转化成一种source，然后合同之前的那个类一起作为参数处理，这样设计的原因是什么？难道不能只用一个source吗
 			sourceClass = doProcessConfigurationClass(configClass, sourceClass);
 		}
-		while (sourceClass != null);
+		while (sourceClass != null);// 递归只是用来处理有父类的情况
 		// 将已解析的配置类放一块
 		this.configurationClasses.put(configClass, configClass);
 	}
@@ -314,7 +319,7 @@ class ConfigurationClassParser {
 		// 4、处理@Import注解，有三种情况，@TODO，还需要研究
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
 
-		// 5、处理ImportResource注解，用的不多
+		// 5、处理ImportResource注解，导入xml文件用的不多
 		AnnotationAttributes importResource =
 				AnnotationConfigUtils.attributesFor(sourceClass.getMetadata(), ImportResource.class);
 		if (importResource != null) {

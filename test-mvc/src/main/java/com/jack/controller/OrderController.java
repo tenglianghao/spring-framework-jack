@@ -13,6 +13,6 @@ import java.io.IOException;
 public class OrderController implements HttpRequestHandler {
 	@Override
 	public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
+		System.out.println("进入OrderController执行处理请求方法.....");
 	}
 }

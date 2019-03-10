@@ -97,7 +97,6 @@ class ConfigurationClassBeanDefinitionReader {
 	ConfigurationClassBeanDefinitionReader(BeanDefinitionRegistry registry, SourceExtractor sourceExtractor,
 			ResourceLoader resourceLoader, Environment environment, BeanNameGenerator importBeanNameGenerator,
 			ImportRegistry importRegistry) {
-
 		this.registry = registry;
 		this.sourceExtractor = sourceExtractor;
 		this.resourceLoader = resourceLoader;

@@ -7,6 +7,4 @@ import org.springframework.stereotype.Service;
 
 public class OrderService {
 
-	@Autowired
-	private UserService userService;
 }

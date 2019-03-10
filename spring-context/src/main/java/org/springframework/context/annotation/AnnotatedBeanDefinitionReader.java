@@ -216,7 +216,7 @@ public class AnnotatedBeanDefinitionReader {
 	 * @since 5.0
 	 */
 	/**
-	 * 真正注册BeanDefinition的方法
+	 * 真正注册BeanDefinition的方法,从这里注册的BD全部都是AnnotatedGenericBeanDefinition类型
 	 * @param annotatedClass
 	 * @param instanceSupplier
 	 * @param name

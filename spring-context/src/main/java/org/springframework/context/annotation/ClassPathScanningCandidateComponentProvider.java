@@ -421,6 +421,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
 			boolean traceEnabled = logger.isTraceEnabled();
 			boolean debugEnabled = logger.isDebugEnabled();
+			// 将目标package下的class文件都找出来，一个一个地循环遍历
 			for (Resource resource : resources) {
 				if (traceEnabled) {
 					logger.trace("Scanning " + resource);
@@ -428,11 +429,18 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				if (resource.isReadable()) {
 					try {
 						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
+						/*
+						判断这个类是否是候选类，只是作一个初步验证。实际上是分别经过 excludeFilters 和 includeFilters的过滤
+						默认的 includeFilters 数组包含了一个AnnotationTypeFilter（org.springframework.stereotype.Component）
+						也就是说只要是@Component系列的注解都会被扫描到。
+						而我们常用的@Controller、@Service、@Configuration、@Repository都是@Compontent系列的
+						因为这些注解上面都有一个@Component。当然也可以自定义,只需要自己定义注解上面加一个@Component即可
+						 */
 						if (isCandidateComponent(metadataReader)) {
 							ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
 							sbd.setResource(resource);
 							sbd.setSource(resource);
-							if (isCandidateComponent(sbd)) {
+							if (isCandidateComponent(sbd)) {//再次进行判断，主要是对@lookup注解的处理
 								if (debugEnabled) {
 									logger.debug("Identified candidate component class: " + resource);
 								}

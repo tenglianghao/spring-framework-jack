@@ -53,7 +53,7 @@ import org.springframework.util.ClassUtils;
  */
 final class ConfigurationClass {
 
-	private final AnnotationMetadata metadata;
+	private final AnnotationMetadata metadata;//所有注解信息
 
 	private final Resource resource;
 

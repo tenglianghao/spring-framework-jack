@@ -489,6 +489,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	/**
 	 * Overridden method of {@link HttpServletBean}, invoked after any bean properties
 	 * have been set. Creates this servlet's WebApplicationContext.
+	 * 子类重写，创建 WebApplicationContext
 	 */
 	@Override
 	protected final void initServletBean() throws ServletException {
@@ -499,7 +500,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		long startTime = System.currentTimeMillis();
 		try {
 			this.webApplicationContext = initWebApplicationContext();
-			// 空方法，没有子类重写
+			// 空方法，没有子类重写，可能用于以后拓展
 			initFrameworkServlet();
 		}
 		catch (ServletException | RuntimeException ex) {
@@ -567,7 +568,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			}
 		}
 
-		if (this.publishContext) {
+		if (this.publishContext) {// 默认为true
 			// Publish the context as a servlet context attribute.
 			String attrName = getServletContextAttributeName();
 			getServletContext().setAttribute(attrName, wac);

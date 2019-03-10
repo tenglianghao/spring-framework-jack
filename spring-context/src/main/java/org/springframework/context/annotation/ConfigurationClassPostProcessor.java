@@ -267,7 +267,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * @param registry
 	 */
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
-		// configCandidates ： spring内部使用的
+		// 候选的配置类
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
 		// 从DefaultListableBeanFactory的beanDefinitionNames属性中取出所有候选的BeanDefinition的名字，6+1
 		String[] candidateNames = registry.getBeanDefinitionNames();
@@ -320,7 +320,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			this.environment = new StandardEnvironment();
 		}
 
-		// 解析每个 @Configuration 配置类
+		// 解析每个配置类
 		// metadataReaderFactory：CachingMetadataReaderFactory
 		// problemReporter ： FailFastProblemReporter
 		// resourceLoader ： DefaultResourceLoader
@@ -331,11 +331,11 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
-			// 执行解析方法（spring的核心代码）
+			// 执行解析方法（spring的核心代码）,解析的结果放在属性 configurationClasses 中
 			parser.parse(candidates);
 			// 进行验证，结果放在 problemReporter 中
 			parser.validate();
-
+			//先把可能解析为BeanDefinition的注解记录到configClasses中
 			Set<ConfigurationClass> configClasses = new LinkedHashSet<>(parser.getConfigurationClasses());
 			configClasses.removeAll(alreadyParsed);
 
@@ -345,6 +345,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 						registry, this.sourceExtractor, this.resourceLoader, this.environment,
 						this.importBeanNameGenerator, parser.getImportRegistry());
 			}
+			// 真正添加BeanDefinition是在这里。
+			// 这个类好，它只有一个暴露的公有方法，即：loadBeanDefinitions，算作是一个工具类
 			this.reader.loadBeanDefinitions(configClasses);
 			alreadyParsed.addAll(configClasses);
 

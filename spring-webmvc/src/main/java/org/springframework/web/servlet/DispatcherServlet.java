@@ -280,6 +280,7 @@ public class DispatcherServlet extends FrameworkServlet {
 		// This is currently strictly internal and not meant to be customized
 		// by application developers.
 		try {
+			//org/springframework/web/servlet/DispatcherServlet.properties
 			ClassPathResource resource = new ClassPathResource(DEFAULT_STRATEGIES_PATH, DispatcherServlet.class);
 			defaultStrategies = PropertiesLoaderUtils.loadProperties(resource);
 		}
@@ -498,12 +499,12 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * context即之前创建的AnnotationConfigWebApplicationContext
 	 */
 	protected void initStrategies(ApplicationContext context) {
-		initMultipartResolver(context);
-		initLocaleResolver(context);
-		initThemeResolver(context);
+		initMultipartResolver(context);// 初始化用于上传文件的解析器
+		initLocaleResolver(context);// 初始化本地解析器 localeResolver
+		initThemeResolver(context);// 初始化theme解析器
 		initHandlerMappings(context);//初始化HandlerMappings
-		initHandlerAdapters(context);
-		initHandlerExceptionResolvers(context);
+		initHandlerAdapters(context);// 初始化HandlerAdapters
+		initHandlerExceptionResolvers(context);// 初始化异常解析器
 		initRequestToViewNameTranslator(context);
 		initViewResolvers(context);
 		initFlashMapManager(context);
@@ -513,6 +514,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Initialize the MultipartResolver used by this class.
 	 * <p>If no bean is defined with the given name in the BeanFactory for this namespace,
 	 * no multipart handling is provided.
+	 * 这里可以证明springmvc上传组件的名称必须是 "multipartResolver"
 	 */
 	private void initMultipartResolver(ApplicationContext context) {
 		try {
@@ -523,6 +525,7 @@ public class DispatcherServlet extends FrameworkServlet {
 		}
 		catch (NoSuchBeanDefinitionException ex) {
 			// Default is no multipart resolver.
+			// 没有这个组件并不影响程序的其他组件正常运行。
 			this.multipartResolver = null;
 			if (logger.isDebugEnabled()) {
 				logger.debug("Unable to locate MultipartResolver with name '" + MULTIPART_RESOLVER_BEAN_NAME +
@@ -583,7 +586,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	private void initHandlerMappings(ApplicationContext context) {
 		this.handlerMappings = null;
 
-		if (this.detectAllHandlerMappings) {
+		if (this.detectAllHandlerMappings) {// 默认true
 			// Find all HandlerMappings in the ApplicationContext, including ancestor contexts.
 			Map<String, HandlerMapping> matchingBeans =
 					BeanFactoryUtils.beansOfTypeIncludingAncestors(context, HandlerMapping.class, true, false);
@@ -850,6 +853,7 @@ public class DispatcherServlet extends FrameworkServlet {
 			for (String className : classNames) {
 				try {
 					Class<?> clazz = ClassUtils.forName(className, DispatcherServlet.class.getClassLoader());
+					// 在ApplicationContext中加入这些bean
 					Object strategy = createDefaultStrategy(context, clazz);
 					strategies.add((T) strategy);
 				}
@@ -976,7 +980,12 @@ public class DispatcherServlet extends FrameworkServlet {
 				}
 
 				// Determine handler adapter for the current request.
-				// return HandlerExecutionChain.handler
+				/*
+				为什么需要HandlerAdapter？因为处理请求的Handler有多种类型，上面提到过，至少有两种类型
+				一种是对应一个类，而另一种是对应一个方法。所以如果直接使用Handler去处理请求，不好做到统一
+				handler是一个Object，它并没有实现任何接口
+				所以这里使用了对象适配器模式，实际上处理请求的还是handler
+				*/
 				HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
 
 				// Process last-modified header, if supported by the handler.
@@ -991,12 +1000,13 @@ public class DispatcherServlet extends FrameworkServlet {
 						return;
 					}
 				}
-
+				// 调用拦截器的preHandle()方法
 				if (!mappedHandler.applyPreHandle(processedRequest, response)) {
 					return;
 				}
 
 				// Actually invoke the handler.
+				// 调用handlerAdapter的handle方法实际处理请求。
 				mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
 
 				if (asyncManager.isConcurrentHandlingStarted()) {
@@ -1004,6 +1014,7 @@ public class DispatcherServlet extends FrameworkServlet {
 				}
 
 				applyDefaultViewName(processedRequest, mv);
+				// 调用拦截器的postHandle()方法
 				mappedHandler.applyPostHandle(processedRequest, response, mv);
 			}
 			catch (Exception ex) {
@@ -1236,6 +1247,8 @@ public class DispatcherServlet extends FrameworkServlet {
 
 	/**
 	 * Return the HandlerAdapter for this handler object.
+	 * 根据Handler来确定HandlerAdapter很简单，循环遍历所有的HandlerAdapter，找到第一个匹配的即可
+	 * supports(handler)返回为true即为匹配
 	 * @param handler the handler object to find an adapter for
 	 * @throws ServletException if no HandlerAdapter can be found for the handler. This is a fatal error.
 	 */
